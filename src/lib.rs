@@ -29,13 +29,11 @@ impl CCAPI{
                 tag_build = format!("{}{}",tag_build,format!("\"hypercube:{int_key}\":{int_value}b,")) // {"hypercube:terminal":"abc"}
             }
             let build = format!("[{{count: {}, Slot: {}b, components: {{\"minecraft:custom_data\": {{PublicBukkitValues: {{{}}}}}}}, id: \"{}\"}}]",item.count,slot,tag_build,item.material);
-            println!("{build}");
             let _ = self.socket.send(Message::text(format!("setinv {}",build)));
-            println!("{}",self.socket.read().unwrap().to_text().unwrap().to_string());
         }
     }
     pub fn connect() -> CCAPI{
-        let (socket,_) = tungstenite::connect("ws://localhost:31375").expect("Error Connecting to CCAPI");
+        let (socket,_) = tungstenite::connect("ws://localhost:31375").expect("Error");
         let scopes: Vec<String> = Vec::new();
         CCAPI {socket,scopes}
     }
@@ -44,6 +42,14 @@ impl CCAPI{
     }
     pub fn has_scope(&mut self,scope:String) -> bool{
         return self.scopes.contains(&scope);
+    }
+    pub fn get_mode(&mut self) -> String{
+        if self.scopes.contains(&String::from("movement")){
+            let _ = self.socket.send(Message::text(format!("mode")));
+            return self.socket.read().unwrap().to_text().unwrap().to_string();
+        }else{
+            return String::from("Insufficient Scopes");
+        }
     }
     pub fn request_scope(&mut self,scope:String){
         if !self.scopes.contains(&scope){

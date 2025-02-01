@@ -6,6 +6,6 @@ fn main(){
     let mut api = graphitesparklib::CCAPI::connect();
     api.request_scope(format!("inventory"));
     let _ = api.set_inv(1, new);
+    println!("{}",api.get_mode());
     api.terminate();
 }
-eprintln
