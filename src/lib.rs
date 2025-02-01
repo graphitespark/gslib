@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use tungstenite::{stream::MaybeTlsStream, Message, WebSocket};
 use std::net::TcpStream;
-pub fn safeify(mut text:String) -> String{
+fn safeify(mut text:String) -> String{
     text = text.replace("\\","\\\\");
     text.replace("\"","\\\"")
 }
@@ -36,8 +36,14 @@ impl Item{
     pub fn set_inv(&self,slot:i32,ccapi:&mut CCAPI) -> Result<(), &'static str>{
         if ccapi.scopes.contains(&String::from("inventory")){
             let mut tag_build = String::new();
-            for (str_key,str_value) in self.str_tags.clone(){
+            for (mut str_key,mut str_value) in self.str_tags.clone(){
+                str_key = safeify(str_key);
+                str_value = safeify(str_value);
                 tag_build = format!("{}{}",tag_build,format!("{{\"hypercube:{str_key}\":\"{str_value}\"}}")) // {"hypercube:terminal":"abc"}
+            }
+            for (mut int_key,int_value) in self.int_tags.clone(){
+                int_key = safeify(int_key);
+                tag_build = format!("{}{}",tag_build,format!("{{\"hypercube:{int_key}\":{int_value}}}")) // {"hypercube:terminal":"abc"}
             }
             let build = format!("[{{count: {}, Slot: {}b, components: {{{{\"minecraft:custom_data\": {{PublicBukkitValues: {}}}}}, id: \"{}\"}}]",self.count,slot,tag_build,self.material);
             let _ = ccapi.socket.send(Message::text(format!("setinv {}",build)));
