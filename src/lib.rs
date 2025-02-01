@@ -37,8 +37,8 @@ impl CCAPI{
         }
     }
     pub fn connect() -> CCAPI{
-        let (mut socket,_) = tungstenite::connect("ws://localhost:31375").expect("Error Connecting to CCAPI");
-        let mut scopes: Vec<String> = Vec::new();
+        let (socket,_) = tungstenite::connect("ws://localhost:31375").expect("Error Connecting to CCAPI");
+        let scopes: Vec<String> = Vec::new();
         CCAPI {socket,scopes}
     }
     pub fn terminate(&mut self){
