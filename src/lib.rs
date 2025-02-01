@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, io::{Error, ErrorKind}};
 use tungstenite::{stream::MaybeTlsStream, Message, WebSocket};
 use std::net::TcpStream;
 fn safeify(mut text:String) -> String{
@@ -17,7 +17,7 @@ pub struct CCAPI{
     scopes:Vec<String>
 }
 impl CCAPI{
-    pub fn set_inv(&mut self,slot:i32,item:Item) -> Result<(), &'static str>{
+    pub fn set_inv(&mut self,slot:i32,item:Item){
         if self.scopes.contains(&String::from("inventory")){
             let mut tag_build = String::new();
             for (mut str_key,mut str_value) in item.str_tags.clone(){
@@ -31,9 +31,6 @@ impl CCAPI{
             }
             let build = format!("[{{count: {}, Slot: {}b, components: {{{{\"minecraft:custom_data\": {{PublicBukkitValues: {}}}}}, id: \"{}\"}}]",item.count,slot,tag_build,item.material);
             let _ = self.socket.send(Message::text(format!("setinv {}",build)));
-            return Ok(());
-        }else{
-            return Err("Insufficient Scopes");
         }
     }
     pub fn connect() -> CCAPI{
