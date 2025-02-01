@@ -17,14 +17,32 @@ pub struct CCAPI{
     scopes:Vec<String>
 }
 impl CCAPI{
+    pub fn set_inv(&mut self,slot:i32,item:Item) -> Result<(), &'static str>{
+        if self.scopes.contains(&String::from("inventory")){
+            let mut tag_build = String::new();
+            for (mut str_key,mut str_value) in item.str_tags.clone(){
+                str_key = safeify(str_key);
+                str_value = safeify(str_value);
+                tag_build = format!("{}{}",tag_build,format!("{{\"hypercube:{str_key}\":\"{str_value}\"}}")) // {"hypercube:terminal":"abc"}
+            }
+            for (mut int_key,int_value) in item.int_tags.clone(){
+                int_key = safeify(int_key);
+                tag_build = format!("{}{}",tag_build,format!("{{\"hypercube:{int_key}\":{int_value}}}")) // {"hypercube:terminal":"abc"}
+            }
+            let build = format!("[{{count: {}, Slot: {}b, components: {{{{\"minecraft:custom_data\": {{PublicBukkitValues: {}}}}}, id: \"{}\"}}]",item.count,slot,tag_build,item.material);
+            let _ = self.socket.send(Message::text(format!("setinv {}",build)));
+            return Ok(());
+        }else{
+            return Err("Insufficient Scopes");
+        }
+    }
     pub fn connect() -> CCAPI{
         let (mut socket,_) = tungstenite::connect("ws://localhost:31375").expect("Error Connecting to CCAPI");
         let mut scopes: Vec<String> = Vec::new();
-        scopes.push(String::from("default"));
         CCAPI {socket,scopes}
     }
-    pub fn terminate(){
-
+    pub fn terminate(&mut self){
+        let _ = &self.socket.close(None);
     }
 }
 impl Item{
@@ -32,25 +50,6 @@ impl Item{
         let str_tags: HashMap<String, String> = HashMap::new();
         let int_tags: HashMap<String, i32> = HashMap::new();
         Item {name,material,count,int_tags,str_tags}
-    }
-    pub fn set_inv(&self,slot:i32,ccapi:&mut CCAPI) -> Result<(), &'static str>{
-        if ccapi.scopes.contains(&String::from("inventory")){
-            let mut tag_build = String::new();
-            for (mut str_key,mut str_value) in self.str_tags.clone(){
-                str_key = safeify(str_key);
-                str_value = safeify(str_value);
-                tag_build = format!("{}{}",tag_build,format!("{{\"hypercube:{str_key}\":\"{str_value}\"}}")) // {"hypercube:terminal":"abc"}
-            }
-            for (mut int_key,int_value) in self.int_tags.clone(){
-                int_key = safeify(int_key);
-                tag_build = format!("{}{}",tag_build,format!("{{\"hypercube:{int_key}\":{int_value}}}")) // {"hypercube:terminal":"abc"}
-            }
-            let build = format!("[{{count: {}, Slot: {}b, components: {{{{\"minecraft:custom_data\": {{PublicBukkitValues: {}}}}}, id: \"{}\"}}]",self.count,slot,tag_build,self.material);
-            let _ = ccapi.socket.send(Message::text(format!("setinv {}",build)));
-            return Ok(());
-        }else{
-            return Err("Insufficient Scopes");
-        }
     }
     pub fn set_material(&mut self,material:String){
         self.material = material;
