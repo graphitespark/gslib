@@ -5,6 +5,14 @@ fn safeify(mut text:String) -> String{
     text = text.replace("\\","\\\\");
     return text.replace("\"","\\\"");
 }
+fn list_contains_list(obj:&Vec<String>,contain:&Vec<String>) -> bool{
+    for i in contain{
+        if obj.contains(i){
+            return true;
+        }
+    }
+    return false;
+}
 pub struct Item{
     material:String,
     count:i32,
@@ -32,13 +40,24 @@ impl CCAPI{
             let _ = self.socket.send(Message::text(format!("setinv {}",build)));
         }
     }
+    pub fn get_token(&mut self) -> String{
+        let _ = self.socket.send(Message::text("token"));
+        return self.socket.read().unwrap().to_string();
+    }
+    pub fn use_token(&mut self,token:String) -> bool{
+        let _ = self.socket.send(Message::text(format!("token {token}")));
+        if self.socket.read().unwrap().to_string() == format!("auth"){
+            return true
+        }
+        false
+    }
     pub fn connect() -> CCAPI{
         let (socket,_) = tungstenite::connect("ws://localhost:31375").expect("Error");
         let scopes: Vec<String> = Vec::new();
         CCAPI {socket,scopes}
     }
-    pub fn terminate(&mut self){
-        let _ = &self.socket.close(None);
+    pub fn terminate(mut self){
+        let _ = self.socket.close(None);
     }
     pub fn has_scope(&mut self,scope:String) -> bool{
         return self.scopes.contains(&scope);
@@ -51,12 +70,19 @@ impl CCAPI{
             return String::from("Insufficient Scopes");
         }
     }
-    pub fn request_scope(&mut self,scope:String){
-        if !self.scopes.contains(&scope){
-            let _ = self.socket.send(Message::text(format!("scopes {}",scope)));
+    pub fn set_mode(&mut self,mode:String){
+        if self.scopes.contains(&String::from("movement")){
+            let _ = self.socket.send(Message::text(format!("mode {mode}")));
+        }
+    }
+    pub fn request_scope(&mut self,scope:Vec<String>){
+        if !list_contains_list(&self.scopes,&scope){
+            let _ = self.socket.send(Message::text(format!("scopes {}",scope.join(" "))));
             loop{
                 if self.socket.read().unwrap().to_text().unwrap().to_string() == "auth"{
-                    self.scopes.push(scope);
+                    for i in scope{
+                        self.scopes.push(i);
+                    }
                     break;
                 };
             }
