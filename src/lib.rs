@@ -62,15 +62,15 @@ impl CCAPI{
         false
     }
     pub fn connect() -> CCAPI{
-        let (socket,_) = tungstenite::connect("ws://localhost:31375").expect("Error");
+        let (socket,_) = tungstenite::connect("ws://localhost:31375").expect("Error Connecting to CCAPI");
         let scopes: Vec<String> = Vec::new();
         CCAPI {socket,scopes}
     }
     pub fn terminate(mut self){
         let _ = self.socket.close(None);
     }
-    pub fn has_scope(&mut self,scope:String) -> bool{
-        return self.scopes.contains(&scope);
+    pub fn has_scope(&mut self,scope:&str) -> bool{
+        return self.scopes.contains(&scope.to_string());
     }
     pub fn get_mode(&mut self) -> String{
         if self.scopes.contains(&"movement".to_string()){
@@ -80,7 +80,7 @@ impl CCAPI{
             return String::from("Insufficient Scopes");
         }
     }
-    pub fn set_mode(&mut self,mode:String){
+    pub fn set_mode(&mut self,mode:&str){
         if self.scopes.contains(&"movement".to_string()){
             let _ = self.socket.send(Message::text(format!("mode {mode}")));
         }
@@ -89,7 +89,7 @@ impl CCAPI{
         if !list_contains_list(&self.scopes,&scope){
             let _ = self.socket.send(Message::text(format!("scopes {}",scope.join(" "))));
             loop{
-                if self.socket.read().unwrap().to_text().unwrap().to_string() == "auth"{
+                if self.socket.read().unwrap().to_text().unwrap() == "auth"{
                     for i in scope{
                         self.scopes.push(i);
                     }
