@@ -24,8 +24,18 @@ pub struct CCAPI{
     scopes:Vec<String>
 }
 impl CCAPI{
+    pub fn clear_plot(&mut self){
+        if self.scopes.contains(&"clear_plot".to_string()){
+            let _ = self.socket.send(Message::text("clear"));
+        }
+    }
+    pub fn spawn(&mut self){
+        if self.scopes.contains(&"movement".to_string()){
+          let _ = self.socket.send(Message::text("spawn"));
+        }
+    }
     pub fn set_inv(&mut self,slot:i32,item:Item){
-        if self.scopes.contains(&String::from("inventory")){
+        if self.scopes.contains(&"movement".to_string()){
             let mut tag_build = String::new();
             for (mut str_key,mut str_value) in item.str_tags.clone(){
                 str_key = safeify(str_key);
@@ -63,7 +73,7 @@ impl CCAPI{
         return self.scopes.contains(&scope);
     }
     pub fn get_mode(&mut self) -> String{
-        if self.scopes.contains(&String::from("movement")){
+        if self.scopes.contains(&"movement".to_string()){
             let _ = self.socket.send(Message::text(format!("mode")));
             return self.socket.read().unwrap().to_text().unwrap().to_string();
         }else{
@@ -71,7 +81,7 @@ impl CCAPI{
         }
     }
     pub fn set_mode(&mut self,mode:String){
-        if self.scopes.contains(&String::from("movement")){
+        if self.scopes.contains(&"movement".to_string()){
             let _ = self.socket.send(Message::text(format!("mode {mode}")));
         }
     }
