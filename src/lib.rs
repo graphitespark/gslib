@@ -35,16 +35,16 @@ impl CCAPI{
         }
     }
     pub fn set_inv(&mut self,slot:i32,item:Item){
-        if self.scopes.contains(&"movement".to_string()){
+        if self.scopes.contains(&"inventory".to_string()){
             let mut tag_build = String::new();
             for (mut str_key,mut str_value) in item.str_tags.clone(){
                 str_key = safeify(str_key);
                 str_value = safeify(str_value);
-                tag_build = format!("{}{}",tag_build,format!("\"hypercube:{str_key}\":\"{str_value}\",")) // {"hypercube:terminal":"abc"}
+                tag_build = format!("{}{}",tag_build,format!("\"hypercube:{str_key}\":\"{str_value}\","))
             }
             for (mut int_key,int_value) in item.int_tags.clone(){
                 int_key = safeify(int_key);
-                tag_build = format!("{}{}",tag_build,format!("\"hypercube:{int_key}\":{int_value}b,")) // {"hypercube:terminal":"abc"}
+                tag_build = format!("{}{}",tag_build,format!("\"hypercube:{int_key}\":{int_value}b,"))
             }
             let build = format!("[{{count: {}, Slot: {}b, components: {{\"minecraft:custom_data\": {{PublicBukkitValues: {{{}}}}}}}, id: \"{}\"}}]",item.count,slot,tag_build,item.material);
             let _ = self.socket.send(Message::text(format!("setinv {}",build)));
