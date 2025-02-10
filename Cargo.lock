@@ -95,6 +95,15 @@ dependencies = [
 name = "graphitesparklib"
 version = "0.1.0"
 dependencies = [
+ "graphitesparklib 0.1.0 (git+https://github.com/graphitespark/graphitesparklib)",
+ "tungstenite",
+]
+
+[[package]]
+name = "graphitesparklib"
+version = "0.1.0"
+source = "git+https://github.com/graphitespark/graphitesparklib#c8b1821d48c9076c5c16ed8f08a5e6fec0d688ec"
+dependencies = [
  "tungstenite",
 ]
 
