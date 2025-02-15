@@ -1,10 +1,9 @@
 [package]
-name = "graphitesparklib"
+name = "gslib"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-graphitesparklib = { git = "https://github.com/graphitespark/graphitesparklib", version = "0.1.0" }
 tungstenite = "0.26.1"
 
 [profile.release]
