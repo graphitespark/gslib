@@ -98,6 +98,14 @@ impl CCAPI{
             }
         }
     }
+    pub fn raw_send(&mut self,cmd:String,await_for_response:bool) -> String{
+        self.socket.send(Message::text(cmd)).unwrap();
+        if await_for_response{
+            return self.socket.read().unwrap().to_string();
+        }else{
+            return String::new();
+        }
+    }
 }
 impl Item{
     pub fn new(material:String,count:i32) -> Item{
