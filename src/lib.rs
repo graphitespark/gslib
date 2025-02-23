@@ -48,6 +48,7 @@ impl CCAPI{
             }
             let build = format!("[{{count: {}, Slot: {}b, components: {{\"minecraft:custom_data\": {{PublicBukkitValues: {{{}}}}}}}, id: \"{}\"}}]",item.count,slot,tag_build,item.material);
             let _ = self.socket.send(Message::text(format!("setinv {}",build)));
+            println!("{}",self.socket.read().unwrap().to_string())
         }
     }
     pub fn get_token(&mut self) -> String{
