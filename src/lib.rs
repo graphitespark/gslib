@@ -21,9 +21,13 @@ pub struct Item{
 }
 pub struct CCAPI{
     socket:WebSocket<MaybeTlsStream<TcpStream>>,
-    scopes:Vec<String>
+    scopes:Vec<String>,
+    verbose:bool
 }
 impl CCAPI{
+    pub fn verbose_mode(&mut self, boolean:bool){
+        self.verbose = boolean
+    }
     pub fn clear_plot(&mut self){
         if self.scopes.contains(&"clear_plot".to_string()){
             let _ = self.socket.send(Message::text("clear"));
@@ -48,6 +52,13 @@ impl CCAPI{
             }
             let build = format!("[{{count: {}, Slot: {}b, components: {{\"minecraft:custom_data\": {{PublicBukkitValues: {{{}}}}}}}, id: \"{}\"}}]",item.count,slot,tag_build,item.material);
             let _ = self.socket.send(Message::text(format!("setinv {}",build)));
+            if self.verbose{
+                println!("{}",self.socket.read().unwrap().to_string())
+            }
+        }else{
+            if self.verbose{
+                println!("insufficient scopes <= lib");
+            }
         }
     }
     pub fn get_token(&mut self) -> String{
@@ -64,7 +75,7 @@ impl CCAPI{
     pub fn connect() -> CCAPI{
         let (socket,_) = tungstenite::connect("ws://localhost:31375").expect("Error Connecting to CCAPI");
         let scopes: Vec<String> = Vec::new();
-        CCAPI {socket,scopes}
+        CCAPI {socket,scopes,verbose: false}
     }
     pub fn terminate(mut self){
         let _ = self.socket.close(None);
